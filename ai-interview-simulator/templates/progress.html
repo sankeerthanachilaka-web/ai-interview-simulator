@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block title %}Progress | AI Interview Simulator{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Your Progress</h1>
+            <p class="text-muted mb-0">Track your interview performance over time.</p>
+        </div>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Interviews Completed</p>
+                    <h2 class="mb-0">{{ interviews|length }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Average Score</p>
+                    <h2 class="mb-0">
+                        {% if interviews %}
+                            {{ "%.1f"|format((interviews|map(attribute='score')|map('default', 0, true)|sum) / (interviews|length)) }}
+                        {% else %}
+                            0
+                        {% endif %}
+                        / 100
+                    </h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <p class="text-muted mb-1">Latest Score</p>
+                    <h2 class="mb-0">
+                        {% if interviews %}
+                            {{ interviews[-1].score or 0 }}
+                        {% else %}
+                            0
+                        {% endif %}
+                        / 100
+                    </h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance graph -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4 class="mb-1">Interview Performance</h4>
+            <p class="text-muted">Your score for each completed interview.</p>
+
+            {% if interviews %}
+                <div style="position:relative; width:100%; height:380px;">
+                    <canvas id="progressChart"></canvas>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h5>No completed interviews yet</h5>
+                    <p class="text-muted">
+                        Complete an interview and your progress graph will appear here.
+                    </p>
+                    <a href="{{ url_for('start_interview') }}" class="btn btn-primary">
+                        Start Interview
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Interview history -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h4 class="mb-3">Interview Scores</h4>
+
+            {% if interviews %}
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Company</th>
+                                <th>Role</th>
+                                <th>Difficulty</th>
+                                <th>Date</th>
+                                <th>Score</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for interview in interviews %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ interview.company }}</td>
+                                <td>{{ interview.role }}</td>
+                                <td>{{ interview.difficulty }}</td>
+                                <td>
+                                    {% if interview.completed_at %}
+                                        {{ interview.completed_at.strftime("%d %b %Y") }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ interview.score or 0 }}/100</strong>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted mb-0">No interview history yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Weak topics -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="mb-3">Weak Topics</h4>
+
+            {% if weak_topics %}
+                {% for topic in weak_topics[:10] %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>
+                                <strong>{{ topic.topic }}</strong>
+                                {% if topic.subject %}
+                                    <small class="text-muted">({{ topic.subject }})</small>
+                                {% endif %}
+                            </span>
+                            <span>{{ topic.weakness_score|round(0)|int }}%</span>
+                        </div>
+
+                        <div class="progress" style="height: 8px;">
+                            <div
+                                class="progress-bar"
+                                role="progressbar"
+                                style="width: {{ [topic.weakness_score, 100]|min }}%;"
+                            ></div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted mb-0">
+                    Weak topics will appear after your interviews are evaluated.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% if interviews %}
+<script>
+(function () {
+    const canvas = document.getElementById("progressChart");
+
+    if (!canvas) {
+        return;
+    }
+
+    const ctx = canvas.getContext("2d");
+
+    const labels = {{ chart_labels | safe }};
+    const scores = {{ chart_scores | safe }};
+
+    function drawChart() {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+
+        const width = Math.max(rect.width, 320);
+        const height = Math.max(rect.height, 300);
+
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, width, height);
+
+        const padding = {
+            top: 30,
+            right: 30,
+            bottom: 55,
+            left: 55
+        };
+
+        const chartWidth = width - padding.left - padding.right;
+        const chartHeight = height - padding.top - padding.bottom;
+
+        const maxScore = 100;
+        const minScore = 0;
+
+        // Background
+        ctx.clearRect(0, 0, width, height);
+
+        // Grid and Y-axis labels
+        ctx.font = "12px Arial";
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+
+        for (let value = 0; value <= 100; value += 20) {
+            const y = padding.top +
+                chartHeight -
+                ((value - minScore) / (maxScore - minScore)) * chartHeight;
+
+            ctx.beginPath();
+            ctx.moveTo(padding.left, y);
+            ctx.lineTo(width - padding.right, y);
+            ctx.strokeStyle = "#e5e7eb";
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.fillStyle = "#6b7280";
+            ctx.fillText(value, padding.left - 10, y);
+        }
+
+        if (!scores.length) {
+            return;
+        }
+
+        const stepX = scores.length === 1
+            ? chartWidth / 2
+            : chartWidth / (scores.length - 1);
+
+        const points = scores.map(function (score, index) {
+            const safeScore = Math.max(0, Math.min(100, Number(score) || 0));
+
+            const x = scores.length === 1
+                ? padding.left + chartWidth / 2
+                : padding.left + index * stepX;
+
+            const y = padding.top +
+                chartHeight -
+                ((safeScore - minScore) / (maxScore - minScore)) * chartHeight;
+
+            return {
+                x: x,
+                y: y,
+                score: safeScore
+            };
+        });
+
+        // X-axis labels
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "#6b7280";
+
+        points.forEach(function (point, index) {
+            ctx.fillText(
+                labels[index] || ("Interview " + (index + 1)),
+                point.x,
+                height - padding.bottom + 15
+            );
+        });
+
+        // Line
+        if (points.length > 1) {
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+
+            ctx.strokeStyle = "#4f46e5";
+            ctx.lineWidth = 3;
+            ctx.lineJoin = "round";
+            ctx.lineCap = "round";
+            ctx.stroke();
+        }
+
+        // Points
+        points.forEach(function (point) {
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+
+            ctx.fillStyle = "#4f46e5";
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(point.x, point.y, 8, 0, Math.PI * 2);
+
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Score above point
+            ctx.font = "bold 12px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "bottom";
+            ctx.fillStyle = "#111827";
+            ctx.fillText(
+                Math.round(point.score),
+                point.x,
+                point.y - 10
+            );
+        });
+    }
+
+    drawChart();
+
+    window.addEventListener("resize", drawChart);
+})();
+</script>
+{% endif %}
+
+{% endblock %}

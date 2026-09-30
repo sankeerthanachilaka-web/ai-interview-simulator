@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Preparation Hub{% endblock %}
+{% block content %}
+<div class="container-fluid px-lg-4 py-4"><span class="eyebrow">PREPARATION HUB</span><h1 class="fw-bold mt-2">Study what matters next</h1><p class="text-secondary">Use your interview weak topics as a guide, then combine documentation, books and coding practice.</p>
+{% if weak_topics %}<div class="section-card mb-4"><h5>Your current revision priorities</h5><div class="tag-list mt-3">{% for w in weak_topics %}<span>{{ w.topic }} · {{ w.weakness_score|round(0)|int }}</span>{% endfor %}</div></div>{% endif %}
+<div class="row g-4"><div class="col-xl-7"><div class="section-card"><h5>Documentation & learning</h5>{% for r in resources %}<div class="resource-row"><div><span class="badge-soft">{{ r.subject }}</span><h6 class="mt-2 mb-1">{{ r.title }}</h6><p class="small text-secondary mb-0">{{ r.description }}</p></div><a class="btn btn-sm btn-outline-primary" href="{{ r.url }}" target="_blank" rel="noopener">Open <i class="bi bi-box-arrow-up-right"></i></a></div>{% endfor %}</div></div>
+<div class="col-xl-5"><div class="section-card mb-4"><h5>Book recommendations</h5>{% for b in books %}<div class="resource-row"><div><span class="badge-soft">{{ b.subject }}</span><h6 class="mt-2 mb-1">{{ b.title }}</h6><p class="small text-secondary mb-0">{{ b.author }} — {{ b.description }}</p></div><a class="btn btn-sm btn-outline-primary" href="{{ b.url }}" target="_blank" rel="noopener">Info</a></div>{% endfor %}</div>
+<div class="section-card"><h5>Coding practice</h5>{% for p in coding_platforms %}<div class="d-flex justify-content-between align-items-center py-2 border-bottom"><div><strong>{{ p.name }}</strong><div class="small text-secondary">{{ p.description }}</div></div><a href="{{ p.url }}" target="_blank" rel="noopener"><i class="bi bi-arrow-up-right-circle"></i></a></div>{% endfor %}</div></div></div></div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+    <div><span class="eyebrow">DASHBOARD</span><h1 class="fw-bold mt-2">Welcome back, {{ current_user.name.split()[0] }} 👋</h1><p class="text-secondary mb-0">Ready for your next interview?</p></div>
+    <a href="{{ url_for('start_interview') }}" class="btn btn-primary"><i class="bi bi-play-fill"></i> Start New Interview</a>
+  </div>
+  <div class="row g-3 mb-4">
+    {% for label,value,icon in [
+      ("Interviews completed", completed_count, "bi-check2-circle"),
+      ("Average score", average_score ~ "%", "bi-speedometer2"),
+      ("Questions answered", questions_answered, "bi-chat-square-text"),
+      ("Current level", current_level, "bi-bar-chart-steps")
+    ] %}
+    <div class="col-6 col-xl-3"><div class="stat-card"><div class="stat-icon"><i class="bi {{ icon }}"></i></div><div><small>{{ label }}</small><strong>{{ value }}</strong></div></div></div>
+    {% endfor %}
+  </div>
+  <div class="row g-4">
+    <div class="col-xl-8">
+      <div class="section-card">
+        <div class="d-flex justify-content-between align-items-center mb-3"><h5 class="mb-0">Recent interviews</h5><a href="{{ url_for('history') }}">View all</a></div>
+        {% if interviews %}
+        <div class="table-responsive"><table class="table align-middle">
+          <thead><tr><th>Company</th><th>Role</th><th>Level</th><th>Date</th><th>Score</th><th></th></tr></thead>
+          <tbody>{% for i in interviews %}<tr>
+            <td class="fw-semibold">{{ i.company }}</td><td>{{ i.role }}</td><td><span class="badge-soft">{{ i.difficulty }}</span></td>
+            <td>{{ i.started_at.strftime("%d %b %Y") }}</td><td>{% if i.score is not none %}<strong>{{ i.score|round(0)|int }}/100</strong>{% else %}<span class="text-secondary">In progress</span>{% endif %}</td>
+            <td>{% if i.completed_at %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('feedback', interview_id=i.id) }}">Feedback</a>{% endif %}</td>
+          </tr>{% endfor %}</tbody>
+        </table></div>
+        {% else %}<div class="empty-state"><i class="bi bi-rocket"></i><h5>Your first interview is waiting</h5><p>Set your target and let the AI generate the interview.</p><a class="btn btn-primary" href="{{ url_for('start_interview') }}">Start Interview</a></div>{% endif %}
+      </div>
+    </div>
+    <div class="col-xl-4">
+      <div class="section-card mb-4"><h5>Skill snapshot</h5><div class="snapshot"><div><span>Strongest</span><strong>{{ strongest }}</strong></div><div><span>Needs practice</span><strong>{{ weakest }}</strong></div></div></div>
+      <div class="section-card"><h5>Quick actions</h5><div class="d-grid gap-2 mt-3">
+        <a class="btn btn-light text-start" href="{{ url_for('companies_page') }}"><i class="bi bi-buildings me-2"></i>Explore companies</a>
+        <a class="btn btn-light text-start" href="{{ url_for('preparation') }}"><i class="bi bi-book me-2"></i>Preparation Hub</a>
+        <a class="btn btn-light text-start" href="{{ url_for('progress') }}"><i class="bi bi-graph-up me-2"></i>View progress</a>
+      </div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

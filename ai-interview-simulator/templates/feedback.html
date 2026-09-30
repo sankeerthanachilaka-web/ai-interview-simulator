@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Interview Feedback{% endblock %}
+{% block content %}
+<div class="container py-4 py-lg-5">
+  <div class="d-flex flex-wrap justify-content-between gap-3 align-items-end mb-4"><div><span class="eyebrow">INTERVIEW COMPLETE</span><h1 class="fw-bold mt-2">{{ interview.company }} feedback</h1><p class="text-secondary">{{ interview.role }} • {{ interview.branch }} • {{ interview.difficulty }}</p></div><a class="btn btn-primary" href="{{ url_for('start_interview') }}">Practice Again</a></div>
+  <div class="row g-4">
+    <div class="col-lg-4"><div class="score-hero"><small>Overall Score</small><div class="big-score">{{ feedback.overall_score|default(interview.score|round(0)|int) }}<span>/100</span></div><div class="score-ring"><div class="progress"><div class="progress-bar" style="width:{{ feedback.overall_score|default(interview.score or 0) }}%"></div></div></div><p class="mt-3 mb-0">{{ feedback.summary|default("Review your question-level feedback and weak topics.") }}</p></div></div>
+    <div class="col-lg-8"><div class="section-card"><h5>Performance breakdown</h5><div class="row g-3 mt-1">{% for k,v in feedback.performance.items() %}<div class="col-md-6"><div class="perf-row"><div class="d-flex justify-content-between"><span>{{ k }}</span><strong>{{ v }}</strong></div><div class="progress"><div class="progress-bar" style="width:{{ v }}%"></div></div></div></div>{% endfor %}</div></div></div>
+  </div>
+  <div class="row g-4 mt-1">
+    <div class="col-md-6"><div class="section-card h-100"><h5><i class="bi bi-check-circle text-success"></i> Strengths</h5>{% for x in feedback.strengths %}<div class="feedback-item good">{{ x }}</div>{% else %}<p class="text-secondary">No strong pattern identified yet. Keep practicing.</p>{% endfor %}</div></div>
+    <div class="col-md-6"><div class="section-card h-100"><h5><i class="bi bi-exclamation-circle text-warning"></i> Weaknesses</h5>{% for x in feedback.weaknesses %}<div class="feedback-item bad">{{ x }}</div>{% else %}<p class="text-secondary">No major weakness was recorded.</p>{% endfor %}</div></div>
+  </div>
+  <div class="section-card mt-4"><h5>Recommended topics</h5><div class="tag-list mt-3">{% for x in feedback.recommended_topics %}<span>{{ x }}</span>{% else %}<span>Continue broad practice</span>{% endfor %}</div><h5 class="mt-4">Personalized improvement plan</h5><ol class="mt-3">{% for x in feedback.improvement_plan %}<li class="mb-2">{{ x }}</li>{% endfor %}</ol></div>
+  <div class="section-card mt-4"><h5>Question-by-question review</h5><div class="accordion mt-3" id="questionsAccordion">{% for q in questions %}<div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#q{{ q.id }}">Q{{ loop.index }} • {{ q.topic }} • {{ q.score or 0 }}/100</button></h2><div id="q{{ q.id }}" class="accordion-collapse collapse"><div class="accordion-body"><p class="fw-semibold">{{ q.question_text }}</p><div class="answer-review"><strong>Your answer</strong><p>{{ q.user_answer }}</p></div><p class="mb-0"><strong>Feedback:</strong> {{ q.evaluation }}</p></div></div></div>{% endfor %}</div></div>
+</div>
+{% endblock %}

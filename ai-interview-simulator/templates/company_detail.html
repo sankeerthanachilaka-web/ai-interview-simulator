@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ company.name }}{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <a href="{{ url_for('companies_page') }}" class="text-decoration-none"><i class="bi bi-arrow-left"></i> Companies</a>
+  <div class="detail-hero mt-3"><div class="company-logo xl">{{ company.name[0] }}</div><div><span class="eyebrow">{{ company.industry|upper }}</span><h1 class="fw-bold mt-2">{{ company.name }}</h1><p class="text-secondary mb-0">{{ company.description }}</p></div></div>
+  <div class="row g-4 mt-2">
+    <div class="col-lg-8">
+      {% for title,items in [("Common technical roles",company.roles),("Common skills",company.skills),("Programming languages",company.languages),("CS subjects",company.subjects),("Interview stages",company.stages),("Technical preparation topics",company.technical_topics),("HR / behavioral preparation",company.behavioral)] %}
+      <div class="section-card mb-3"><h5>{{ title }}</h5><div class="tag-list">{% for item in items %}<span>{{ item }}</span>{% endfor %}</div></div>
+      {% endfor %}
+    </div>
+    <div class="col-lg-4"><div class="section-card sticky-lg-top" style="top:90px"><h5>Practice this profile</h5><p class="text-secondary">Select branch, role, difficulty, resume and mode before starting.</p><a class="btn btn-primary w-100" href="{{ url_for('start_interview') }}?company={{ company.slug }}">Start Interview</a><div class="alert alert-light mt-3 small mb-0">Company data in this app is configurable guidance, not a guarantee of any employer's current process.</div></div></div>
+  </div>
+</div>
+{% endblock %}

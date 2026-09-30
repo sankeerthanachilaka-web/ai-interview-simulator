@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Interview History{% endblock %}
+{% block content %}
+<div class="container-fluid px-lg-4 py-4"><span class="eyebrow">HISTORY</span><h1 class="fw-bold mt-2">Your interviews</h1><div class="section-card mt-4"><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Company</th><th>Role</th><th>Branch</th><th>Level</th><th>Date</th><th>Score</th><th>Questions</th><th></th></tr></thead><tbody>{% for i in interviews %}<tr><td class="fw-semibold">{{ i.company }}</td><td>{{ i.role }}</td><td>{{ i.branch }}</td><td><span class="badge-soft">{{ i.difficulty }}</span></td><td>{{ i.started_at.strftime("%d %b %Y, %H:%M") }}</td><td>{{ i.score|round(0)|int if i.score is not none else "—" }}</td><td>{{ i.questions|length }}</td><td>{% if i.completed_at %}<a class="btn btn-sm btn-outline-primary" href="{{ url_for('feedback', interview_id=i.id) }}">Open</a>{% else %}<span class="text-secondary">In progress</span>{% endif %}</td></tr>{% else %}<tr><td colspan="8" class="text-center py-5 text-secondary">No interviews yet.</td></tr>{% endfor %}</tbody></table></div></div></div>
+{% endblock %}

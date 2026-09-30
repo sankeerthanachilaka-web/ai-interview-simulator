@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}AI Interview Simulator{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container py-5">
+    <div class="row align-items-center g-5 py-lg-5">
+      <div class="col-lg-7">
+        <span class="eyebrow">AI-POWERED INTERVIEW PRACTICE</span>
+        <h1 class="display-3 fw-bold mt-3">Practice interviews that adapt to <span class="gradient-text">you.</span></h1>
+        <p class="lead text-secondary mt-4">Choose a company, role, branch and difficulty. Upload your resume, answer AI-generated questions, revisit weak concepts and track your progress.</p>
+        <div class="d-flex flex-wrap gap-3 mt-4">
+          <a class="btn btn-primary btn-lg px-4" href="{{ url_for('register') }}">Start Practicing <i class="bi bi-arrow-right"></i></a>
+          <a class="btn btn-outline-dark btn-lg px-4" href="{{ url_for('login') }}">I already have an account</a>
+        </div>
+        <div class="d-flex gap-4 mt-5 small text-secondary">
+          <span><i class="bi bi-stars"></i> Dynamic questions</span>
+          <span><i class="bi bi-file-earmark-person"></i> Resume-aware</span>
+          <span><i class="bi bi-graph-up-arrow"></i> Progress tracking</span>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="hero-panel shadow-lg">
+          <div class="mini-top"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+          <div class="question-preview">
+            <span class="badge text-bg-primary">AI Interviewer</span>
+            <h4 class="mt-3">Explain how you would design a scalable API for your project.</h4>
+            <div class="answer-line"></div><div class="answer-line short"></div><div class="answer-line"></div>
+          </div>
+          <div class="score-preview">
+            <div><small>Latest performance</small><strong>78<span>/100</span></strong></div>
+            <div class="progress flex-grow-1"><div class="progress-bar" style="width:78%"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="container py-5">
+  <div class="text-center mb-5"><span class="eyebrow">ONE PLATFORM</span><h2 class="fw-bold mt-2">Everything you need to prepare</h2></div>
+  <div class="row g-4">
+    {% for icon,title,desc in [
+      ("bi-buildings","Company-specific practice","Use configurable company profiles and role-oriented preparation areas."),
+      ("bi-file-earmark-text","Resume-based questions","Questions can target projects, skills and technologies actually present in your resume."),
+      ("bi-mic","Typing, voice & video UI","Choose how you want to answer. Voice uses speech-to-text when configured."),
+      ("bi-arrow-repeat","Revisit weak areas","Incorrect or low-scoring topics are stored and prioritized in future interviews."),
+      ("bi-bar-chart","Detailed feedback","See scores, strengths, weaknesses and personalized preparation recommendations."),
+      ("bi-book","Preparation hub","Access books, official documentation and coding practice resources.")
+    ] %}
+    <div class="col-md-6 col-xl-4"><div class="feature-card h-100"><div class="icon-box"><i class="bi {{ icon }}"></i></div><h5>{{ title }}</h5><p>{{ desc }}</p></div></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

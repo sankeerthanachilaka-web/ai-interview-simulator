@@ -1,0 +1,444 @@
+{% extends "base.html" %}
+
+{% block title %}Interview{% endblock %}
+
+{% block content %}
+
+<div
+    class="container py-4"
+    id="interviewApp"
+    data-interview-id="{{ interview.id }}"
+    data-question-id="{{ question.id }}"
+    data-mode="{{ interview.mode }}"
+>
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+
+        <div>
+
+            <span class="eyebrow">
+                {{ interview.company|upper }}
+                •
+                {{ interview.role|upper }}
+            </span>
+
+            <h3 class="fw-bold mt-2 mb-0">
+                AI Interview
+            </h3>
+
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <span class="badge-soft">
+                {{ interview.difficulty }}
+            </span>
+
+            <span class="badge-soft">
+                {{ interview.mode }}
+            </span>
+
+            <span class="badge-soft">
+                Question {{ answered + 1 }} / {{ max_questions }}
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- PROGRESS -->
+    <!-- ===================================================== -->
+
+    <div
+        class="progress mb-4"
+        style="height:8px"
+    >
+
+        <div
+            class="progress-bar"
+            style="width:{{ ((answered / max_questions) * 100)|round|int }}%"
+        ></div>
+
+    </div>
+
+
+    <div class="row g-4">
+
+
+        <!-- ================================================= -->
+        <!-- MAIN INTERVIEW -->
+        <!-- ================================================= -->
+
+        <div class="col-lg-8">
+
+            <div class="question-card">
+
+
+                <!-- QUESTION HEADER -->
+
+                <div class="d-flex justify-content-between align-items-start">
+
+                    <span class="badge text-bg-primary">
+                        {{ question.category }}
+                    </span>
+
+                    <span class="text-secondary small">
+                        {{ question.topic }}
+                    </span>
+
+                </div>
+
+
+                <!-- QUESTION -->
+
+                <h2 class="question-text mt-4">
+                    {{ question.question_text }}
+                </h2>
+
+
+                <!-- ================================================= -->
+                <!-- TYPING MODE -->
+                <!-- ================================================= -->
+
+                {% if interview.mode == "Typing" %}
+
+                <textarea
+                    id="answerInput"
+                    class="form-control answer-box mt-4"
+                    rows="9"
+                    placeholder="Type your answer here..."
+                ></textarea>
+
+
+                <!-- ================================================= -->
+                <!-- VOICE MODE -->
+                <!-- ================================================= -->
+
+                {% elif interview.mode == "Voice" %}
+
+                <textarea
+                    id="answerInput"
+                    class="form-control answer-box mt-4"
+                    rows="7"
+                    placeholder="Your transcription will appear here..."
+                ></textarea>
+
+                <div class="voice-controls mt-3">
+
+                    <button
+                        class="btn btn-danger"
+                        id="recordBtn"
+                        type="button"
+                    >
+                        <i class="bi bi-mic-fill"></i>
+                        Start recording
+                    </button>
+
+                    <span
+                        id="recordStatus"
+                        class="text-secondary"
+                    >
+                        Microphone idle
+                    </span>
+
+                </div>
+
+
+                <!-- ================================================= -->
+                <!-- VIDEO MODE -->
+                <!-- ================================================= -->
+
+                {% elif interview.mode == "Video" %}
+
+                <div
+                    class="video-panel mt-4 position-relative"
+                    id="videoContainer"
+                >
+
+                    <video
+                        id="videoPreview"
+                        autoplay
+                        muted
+                        playsinline
+                        style="
+                            width:100%;
+                            max-height:500px;
+                            object-fit:cover;
+                            border-radius:16px;
+                            background:#111;
+                        "
+                    ></video>
+
+                    <div
+                        class="video-overlay"
+                        id="videoOverlay"
+                    >
+                        Camera is initializing...
+                    </div>
+
+                </div>
+
+
+                <!-- VIDEO CONTROLS -->
+
+                <div class="d-flex flex-wrap align-items-center gap-3 mt-3">
+
+                    <button
+                        class="btn btn-danger"
+                        id="videoRecordBtn"
+                        type="button"
+                    >
+                        <i class="bi bi-camera-video-fill"></i>
+                        Start video recording
+                    </button>
+
+                    <span
+                        id="videoRecordStatus"
+                        class="text-secondary"
+                    >
+                        Camera idle
+                    </span>
+
+                </div>
+
+
+                <!-- VIDEO PREVIEW AFTER RECORDING -->
+
+                <div
+                    id="recordedVideoContainer"
+                    class="mt-3"
+                    style="display:none;"
+                >
+
+                    <label class="form-label fw-semibold">
+                        Recorded answer
+                    </label>
+
+                    <video
+                        id="recordedVideoPreview"
+                        controls
+                        playsinline
+                        style="
+                            width:100%;
+                            max-height:400px;
+                            border-radius:16px;
+                            background:#111;
+                        "
+                    ></video>
+
+                </div>
+
+
+                <!-- TRANSCRIPTION -->
+
+                <textarea
+                    id="answerInput"
+                    class="form-control answer-box mt-3"
+                    rows="6"
+                    placeholder="Your spoken answer will appear here after recording..."
+                ></textarea>
+
+
+                <!-- ================================================= -->
+                <!-- VIDEO NOTE -->
+                <!-- ================================================= -->
+
+                <div class="form-text mt-2">
+
+                    <i class="bi bi-info-circle me-1"></i>
+
+                    Video mode records your camera and microphone while
+                    you answer. Your speech is transcribed automatically.
+
+                </div>
+
+                {% endif %}
+
+
+                <!-- ================================================= -->
+                <!-- SUBMIT -->
+                <!-- ================================================= -->
+
+                <div
+                    class="d-flex justify-content-between align-items-center mt-4"
+                >
+
+                    <span
+                        id="submitStatus"
+                        class="small text-secondary"
+                    ></span>
+
+                    <button
+                        id="submitAnswer"
+                        class="btn btn-primary btn-lg px-4"
+                        type="button"
+                    >
+
+                        Submit Answer
+
+                        <i class="bi bi-send"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- SIDEBAR -->
+        <!-- ================================================= -->
+
+        <div class="col-lg-4">
+
+
+            <!-- TIMER -->
+
+            <div class="section-card mb-3">
+
+                <h5>
+
+                    <i class="bi bi-clock me-2"></i>
+
+                    Timer
+
+                </h5>
+
+                <div
+                    id="timer"
+                    class="timer"
+                >
+                    00:00
+                </div>
+
+                <small class="text-secondary">
+                    A practice timer; it does not auto-submit.
+                </small>
+
+            </div>
+
+
+            <!-- GUIDANCE -->
+
+            <div class="section-card">
+
+                <h5>
+                    Interview guidance
+                </h5>
+
+                <ul class="small text-secondary mb-0">
+
+                    <li class="mb-2">
+                        Answer the question you see.
+                    </li>
+
+                    <li class="mb-2">
+                        For projects, explain your own contribution clearly.
+                    </li>
+
+                    <li class="mb-2">
+                        If you do not know something, say so rather than
+                        inventing experience.
+                    </li>
+
+                    {% if interview.mode == "Video" %}
+
+                    <li class="mb-2">
+                        Keep your face visible and speak clearly.
+                    </li>
+
+                    <li>
+                        Make sure your microphone and camera permissions
+                        are enabled.
+                    </li>
+
+                    {% else %}
+
+                    <li>
+                        The next question is generated after evaluation.
+                    </li>
+
+                    {% endif %}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- EVALUATION MODAL -->
+<!-- ========================================================= -->
+
+<div
+    class="modal fade"
+    id="evaluationModal"
+    tabindex="-1"
+>
+
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">
+                    Answer evaluated
+                </h5>
+
+            </div>
+
+            <div
+                class="modal-body"
+                id="evaluationBody"
+            ></div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-primary"
+                    id="continueBtn"
+                    type="button"
+                >
+                    Continue
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script src="{{ url_for('static', filename='js/interview.js') }}"></script>
+
+{% if interview.mode == "Voice" %}
+
+<script src="{{ url_for('static', filename='js/voice.js') }}"></script>
+
+{% elif interview.mode == "Video" %}
+
+<script src="{{ url_for('static', filename='js/video.js') }}"></script>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Start Interview{% endblock %}
+{% block content %}
+<div class="container py-4 py-lg-5">
+  <div class="mb-4"><span class="eyebrow">INTERVIEW SETUP</span><h1 class="fw-bold mt-2">Build your interview</h1><p class="text-secondary">The AI uses these settings plus your resume and previous weak topics to generate questions.</p></div>
+  <form method="post" enctype="multipart/form-data" class="section-card">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-4">
+      <div class="col-md-6"><label class="form-label">Company</label><select class="form-select form-select-lg" name="company" id="companySelect" required>{% for c in companies %}<option value="{{ c.slug }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="col-md-6"><label class="form-label">Branch</label><select class="form-select form-select-lg" name="branch" required><option value="">Choose branch</option>{% for b in branches %}<option>{{ b.name }}</option>{% endfor %}</select></div>
+      <div class="col-md-6"><label class="form-label">Target job role</label><select class="form-select form-select-lg" name="role" required><option value="">Choose role</option>{% for r in roles %}<option>{{ r.name }}</option>{% endfor %}</select></div>
+      <div class="col-md-6"><label class="form-label">Difficulty</label><select class="form-select form-select-lg" name="difficulty" required>{% for d in difficulties %}<option>{{ d.name }}</option>{% endfor %}</select></div>
+      <div class="col-md-6"><label class="form-label">Interview mode</label><select class="form-select form-select-lg" name="mode" required>{% for m in modes %}<option>{{ m.name }}</option>{% endfor %}</select><div class="form-text">Voice uses browser recording + Groq speech-to-text. Video provides a camera interface; this version does not upload/process video.</div></div>
+      <div class="col-md-6"><label class="form-label">Resume (optional if you uploaded one before)</label><input class="form-control form-control-lg" type="file" name="resume" accept=".pdf,.doc,.docx"><div class="form-text">Maximum 5 MB. PDF/DOCX text extraction is supported directly.</div></div>
+      <div class="col-12"><div class="setup-note"><i class="bi bi-shield-check"></i><div><strong>Interview rule:</strong> the AI asks questions and evaluates your attempts. It does not reveal the expected answer before you respond.</div></div></div>
+      <div class="col-12 d-flex justify-content-end"><button class="btn btn-primary btn-lg px-5">Start AI Interview <i class="bi bi-arrow-right"></i></button></div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}<script>
+const params = new URLSearchParams(location.search);
+const selected = params.get("company");
+if (selected) document.getElementById("companySelect").value = selected;
+</script>{% endblock %}
